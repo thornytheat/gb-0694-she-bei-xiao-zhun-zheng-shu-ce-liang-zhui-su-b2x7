@@ -35,3 +35,38 @@ def descendants(start,certs):
         for key,value in certs.items():
             if value['parent']==node and key not in reached:reached.add(key);todo.append(key)
     return sorted(reached)
+
+def combine_uncertainty(path,certs):
+    """整链标准不确定度合成。
+
+    溯源路径上同一份证书（同一上级标准器，可能在多级证书中重复出现）只计一次，
+    避免按每份证书独立累加导致的过度保守（合格件大范围退回）；
+    共享上级作为共同系统分量保留在合成结果中，而不是当作互不相关的随机量跨测量平均抵消。
+    去重后的独立标准不确定度按RSS（方和根）合成 u_c = sqrt(sum(u_i^2))。
+    返回 (u_c, 来源列表, 缺失证书列表, 线性累加基线u_linear)。
+    """
+    sources=[];seen=set();missing=[];linear=number('0')
+    for node in path:
+        if node in seen:continue
+        seen.add(node)
+        record=certs.get(node) or {}
+        if record.get('unc_missing',True) or record.get('unc_v') is None:
+            missing.append(node);continue
+        u=number(record['unc_v'])
+        sources.append({'证书':node,'标准不确定度_V':str(u),'覆盖因子':record.get('coverage_k') or '2'})
+        linear+=u
+    if missing:return None,sources,missing,None
+    squared=sum((number(s['标准不确定度_V'])**2 for s in sources),number('0'))
+    uc=squared.sqrt()
+    return uc,sources,missing,linear
+
+def guard_band_verdict(value, spec_lo, spec_hi, expanded):
+    """护基判定（ISO 14253-1思路）：以扩展不确定度U构造验收区间。
+
+    完整区间[value-U, value+U]落在允许偏差内才判符合；整体落在偏差外判不符合；
+    跨在边界上（区间与规格限相交）判无法判定。边界相切按符合处理（不拒绝原假设）。
+    """
+    low=value-expanded;high=value+expanded
+    if low>=spec_lo and high<=spec_hi:return '符合'
+    if high<spec_lo or low>spec_hi:return '不符合'
+    return '无法判定'

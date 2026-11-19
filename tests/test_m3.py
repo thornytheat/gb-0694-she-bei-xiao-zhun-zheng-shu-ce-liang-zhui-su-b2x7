@@ -10,5 +10,5 @@ def test_start_day_included(ctx):
     c=deepcopy(ctx);c['measurements'][1]['measured_at']='2026-01-01';apply(c);assert c['measurements'][1]['window_valid'] is True
 def test_before_start_rejected(ctx):
     c=deepcopy(ctx);c['measurements'][1]['measured_at']='2025-12-31';apply(c);assert c['measurements'][1]['window_valid'] is False
-def test_validity_evidence(ctx):assert len(ctx['stages']['3']['rows'])==42
+def test_validity_evidence(ctx):assert len(ctx['stages']['3']['rows'])==43
 

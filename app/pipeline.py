@@ -5,11 +5,12 @@ from app.modules.m4_ranges.service import execute as stage4
 from app.modules.m5_trace.service import execute as stage5
 from app.modules.m6_verdict.service import execute as stage6
 from app.modules.m7_revocation.service import execute as stage7
+from app.modules.m8_declaration.service import execute as stage8
 from app.config import SAMPLE
 from app.manifest import make
 from app.numeric import serial
 from time import perf_counter
-def calculate(text=None, stop=7):
+def calculate(text=None, stop=8):
     started=perf_counter()
     if text is None: text=SAMPLE.read_text(encoding='utf-8-sig')
     if not isinstance(text,str):
@@ -20,4 +21,4 @@ def calculate(text=None, stop=7):
     ctx['manifest']['elapsed_ms']=round((perf_counter()-started)*1000,3)
     ctx.pop('text',None)
     return serial(ctx)
-STAGES=[stage1,stage2,stage3,stage4,stage5,stage6,stage7]
+STAGES=[stage1,stage2,stage3,stage4,stage5,stage6,stage7,stage8]

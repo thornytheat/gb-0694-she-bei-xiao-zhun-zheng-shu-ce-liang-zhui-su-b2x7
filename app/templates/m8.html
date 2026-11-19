@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% block stage_visual %}
+<div class="dcl-summary">
+  {% for m in current.metrics %}
+  <div class="dcl-chip dcl-chip--{{ loop.index }}"><b>{{ m[1]|display }}</b><span>{{ m[0] }} {{ m[2] }}</span></div>
+  {% endfor %}
+</div>
+{% for item in current.rows[:8] %}
+<div class="chain-node verdict--{{ item['判定'] }}">
+  <div class="chain-row"><span>{{ item['证书'] }} · {{ item['声明编号'] }}</span><b>{{ item['判定'] }}</b></div>
+  <small>测量 {{ item['测量值_V'] }} V ｜ 合成区间 {{ item['声明区间_V'] }} ｜ 偏差限 {{ item['允许偏差_V'] }}</small><br>
+  <small>来源：{{ item['来源证书'] }} ｜ 共同系统分量：{{ item['共同系统分量'] }} ｜ 依据：{{ item['原因码'] }}</small>
+</div>
+{% endfor %}
+{% endblock %}

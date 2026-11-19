@@ -3,7 +3,7 @@ import csv,io
 from app.errors import DomainError
 from app.reader import decode
 from app.pipeline import calculate
-from app.store import save, latest, history, review, get_run
+from app.store import save, latest, history, review, get_run, list_declarations
 from app.web import bp as web
 
 from app.modules.m1_receiving.handler import bp as bp1
@@ -13,6 +13,7 @@ from app.modules.m4_ranges.handler import bp as bp4
 from app.modules.m5_trace.handler import bp as bp5
 from app.modules.m6_verdict.handler import bp as bp6
 from app.modules.m7_revocation.handler import bp as bp7
+from app.modules.m8_declaration.handler import bp as bp8
 app=Flask(__name__)
 app.config['MAX_CONTENT_LENGTH']=5*1024*1024
 app.json.ensure_ascii=False
@@ -32,6 +33,7 @@ app.register_blueprint(bp4)
 app.register_blueprint(bp5)
 app.register_blueprint(bp6)
 app.register_blueprint(bp7)
+app.register_blueprint(bp8)
 @app.before_request
 def validate_request_object():
     if request.method!='POST': return None
@@ -60,6 +62,9 @@ def run():
 def run_detail(ident): return jsonify(get_run(ident))
 @app.route('/api/history')
 def runs(): return jsonify(history())
+@app.route('/api/declarations')
+def declarations():
+    return jsonify(list_declarations(request.args.get('run_id'), request.args.get('status')))
 @app.route('/api/review',methods=['POST'])
 def decide():
     body=request.get_json(silent=True) or {}
@@ -71,9 +76,9 @@ def evidence():
     result=get_run(request.args['run_id']) if request.args.get('run_id') else (latest() or save(calculate()));out=io.StringIO(newline='')
     rows=[]
     for index,stage in result['stages'].items():
-        rows.extend({'阶段':index,**r} for r in stage['rows'])
-    rows.extend({'阶段':'隔离',**r} for r in result['quarantine'])
-    fields=list(dict.fromkeys(['阶段','run_id','规则版本']+[k for r in rows for k in r]))
+        rows.extend({'阶段':index,'模块':stage.get('name',''),**r} for r in stage['rows'])
+    rows.extend({'阶段':'隔离','模块':'',**r} for r in result['quarantine'])
+    fields=list(dict.fromkeys(['阶段','模块','run_id','规则版本']+[k for r in rows for k in r]))
     writer=csv.DictWriter(out,fieldnames=fields);writer.writeheader()
     for row in rows: writer.writerow({'run_id':result['manifest']['run_id'],'规则版本':result['manifest']['rule_version'],**row})
     return Response('\ufeff'+out.getvalue(),mimetype='text/csv',headers={'Content-Disposition':'attachment; filename=evidence.csv'})

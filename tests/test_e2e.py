@@ -1,5 +1,5 @@
 def test_all_pages_render(client):
-    for n in range(1,8): assert client.get('/work/'+str(n)).status_code==200
+    for n in range(1,9): assert client.get('/work/'+str(n)).status_code==200
 def test_end_to_end_idempotence(client):
     first=client.post('/api/run',json={}).get_json();again=client.post('/api/run',json={}).get_json()
     assert first['manifest']['run_id']==again['manifest']['run_id'];assert again['reused'] is True
@@ -15,7 +15,7 @@ def test_evidence_has_manifest_and_reason(client):
     text=client.get('/api/evidence.csv').data.decode('utf-8-sig')
     assert 'run_id' in text and '规则版本' in text and '原因码' in text
 def test_independent_module_endpoints(client):
-    for n in range(1,8):
+    for n in range(1,9):
         response=client.post('/api/m'+str(n),json={})
         assert response.status_code==200;assert response.get_json()['stage']==n
 def test_selected_batch_survives_interleaved_rerun(client,raw):

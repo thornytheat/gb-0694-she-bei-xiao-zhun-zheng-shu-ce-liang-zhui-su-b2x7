@@ -6,7 +6,7 @@ bp=Blueprint('web',__name__)
 @bp.route('/')
 @bp.route('/work/<int:stage>')
 def work(stage=1):
-    if stage<1 or stage>7:
+    if stage<1 or stage>8:
         from flask import abort
         abort(404)
     run=get_run(request.args['run_id']) if request.args.get('run_id') else latest()

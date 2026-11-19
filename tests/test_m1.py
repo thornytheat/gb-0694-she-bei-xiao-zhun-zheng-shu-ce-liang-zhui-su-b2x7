@@ -2,7 +2,7 @@ from app.reader import decode
 from app.pipeline import calculate
 from app.errors import DomainError
 import pytest
-def test_sample_records(ctx):assert ctx['input_count']==45
+def test_sample_records(ctx):assert ctx['input_count']==46
 def test_legacy_chinese(): # TRAP-01
     from app.config import SAMPLE
     assert '标准源' in decode(SAMPLE.with_name('legacy-gb18030.csv').read_bytes())
